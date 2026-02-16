@@ -1,0 +1,43 @@
+import { Plan } from "@/types/plan";
+
+export const PLANS: Plan[] = [
+  {
+    id: "savings",
+    name: "Savings Plan",
+    badge: "RECOMMENDED",
+    audience: "Small teams that want the lowest-cost way to plan, assign, and follow up weekly work.",
+    outcome: "Lower monthly spend while keeping core weekly execution support active.",
+    priceLabel: "$20",
+    priceValue: 20,
+    priceNote: "Tool fee is waived. You only pay for API credits.",
+    bestFor: "Small teams that want the lowest-cost way to plan, assign, and follow up weekly work.",
+    includes: [
+      "Full access to core assistant features",
+      "API credits included in this bundle",
+      "Enough to set up goals, assign tasks, and track progress for a small team (typical monthly usage)",
+    ],
+    tradeOffs: ["May be slower during peak traffic", "No priority 1:1 support"],
+    ctaLabel: "Choose Savings",
+    period: "month",
+  },
+  {
+    id: "standard",
+    name: "Standard Plan",
+    badge: "FASTEST EXPERIENCE",
+    audience: "Teams that want faster response time and priority help.",
+    outcome: "Faster assistant speed and strong day-to-day execution reliability.",
+    priceLabel: "$30",
+    priceValue: 30,
+    priceNote: "Includes tool subscription + API credits bundle.",
+    bestFor: "Teams that want faster response time and priority help.",
+    includes: [
+      "Priority processing (no queue)",
+      "1:1 support",
+      "API credits included in this bundle",
+      "Stable day-to-day execution for active teams",
+    ],
+    ctaLabel: "Choose Standard",
+    period: "month",
+    highlight: "Most chosen"
+  },
+];
