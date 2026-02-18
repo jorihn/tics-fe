@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 interface TelegramThemeParams {
   bg_color?: string;
@@ -53,22 +53,22 @@ const FALLBACK_THEME = {
 };
 
 export function useTelegramWebApp(): TelegramWebAppState {
-  const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
+  const webApp = useMemo<TelegramWebApp | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    return window.Telegram?.WebApp ?? null;
+  }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (!webApp) {
       return;
     }
 
-    const tg = window.Telegram?.WebApp;
-    if (!tg) {
-      return;
-    }
-
-    tg.ready();
-    tg.expand();
-    setWebApp(tg);
-  }, []);
+    webApp.ready();
+    webApp.expand();
+  }, [webApp]);
 
   const theme = useMemo(() => {
     if (!webApp) {

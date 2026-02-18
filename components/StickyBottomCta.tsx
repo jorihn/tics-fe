@@ -14,7 +14,6 @@ export function StickyBottomCta({ onClick }: StickyBottomCtaProps) {
     const repeatedCtaSection = document.getElementById("repeated-cta");
 
     if (!repeatedCtaSection) {
-      setIsVisible(true);
       return;
     }
 
