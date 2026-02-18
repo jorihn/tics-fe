@@ -9,6 +9,9 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@ton/crypto": "^3.3.0",
+    "@ton/ton": "^16.2.2",
+    "@tonconnect/ui-react": "^2.4.1",
     "next": "^16.1.6",
     "react": "18.3.1",
     "react-dom": "18.3.1",

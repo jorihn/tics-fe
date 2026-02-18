@@ -8,6 +8,11 @@ export const TRACKING_EVENTS = [
   "click_pay",
   "payment_success",
   "payment_failed",
+  "payment_intent_create",
+  "payment_intent_created",
+  "payment_intent_failed",
+  "payment_start",
+  "payment_verify_failed",
 ] as const;
 
 export type TrackingEvent = (typeof TRACKING_EVENTS)[number];

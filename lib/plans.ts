@@ -2,6 +2,25 @@ import { Plan } from "@/types/plan";
 
 export const PLANS: Plan[] = [
   {
+    id: "donate",
+    name: "Donate (Test)",
+    badge: "TEST ONLY",
+    audience: "Test blockchain payment with minimal cost.",
+    outcome: "Verify payment integration works end-to-end.",
+    priceLabel: "0.001 TON",
+    priceValue: 0.001,
+    priceNote: "Fixed amount for testing. Not a real plan.",
+    bestFor: "Testing payment flow without spending much.",
+    includes: [
+      "Test TON Connect wallet integration",
+      "Test on-chain verification",
+      "Test payment state transitions",
+    ],
+    tradeOffs: ["Not a real subscription plan", "For testing purposes only"],
+    ctaLabel: "Test Donate",
+    period: "once",
+  },
+  {
     id: "savings",
     name: "Savings Plan",
     badge: "RECOMMENDED",

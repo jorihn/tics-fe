@@ -1,36 +1,36 @@
 "use client";
 
 import { create } from "zustand";
-import { PaymentMethod, PaymentStatus } from "@/types/payment";
+import { PaymentAsset, PaymentStatus } from "@/types/payment";
 import { Plan } from "@/types/plan";
 
 interface CheckoutState {
   selectedPlan: Plan | null;
-  method: PaymentMethod;
+  asset: PaymentAsset;
   paymentStatus: PaymentStatus;
-  checkoutId: string | null;
+  intentId: string | null;
   paymentMessage: string;
   setPlan: (plan: Plan) => void;
-  setMethod: (method: PaymentMethod) => void;
-  setPaymentState: (status: PaymentStatus, message?: string, checkoutId?: string | null) => void;
+  setAsset: (asset: PaymentAsset) => void;
+  setPaymentState: (status: PaymentStatus, message?: string, intentId?: string | null) => void;
   resetPayment: () => void;
 }
 
 export const useCheckoutStore = create<CheckoutState>((set) => ({
   selectedPlan: null,
-  method: "usdt",
+  asset: "TON",
   paymentStatus: "idle",
-  checkoutId: null,
+  intentId: null,
   paymentMessage: "",
   setPlan: (plan) =>
     set({
       selectedPlan: plan,
       paymentStatus: "idle",
       paymentMessage: "",
-      checkoutId: null,
+      intentId: null,
     }),
-  setMethod: (method) => set({ method }),
-  setPaymentState: (paymentStatus, paymentMessage = "", checkoutId = null) =>
-    set({ paymentStatus, paymentMessage, checkoutId }),
-  resetPayment: () => set({ paymentStatus: "idle", paymentMessage: "", checkoutId: null }),
+  setAsset: (asset) => set({ asset }),
+  setPaymentState: (paymentStatus, paymentMessage = "", intentId = null) =>
+    set({ paymentStatus, paymentMessage, intentId }),
+  resetPayment: () => set({ paymentStatus: "idle", paymentMessage: "", intentId: null }),
 }));

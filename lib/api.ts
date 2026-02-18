@@ -1,46 +1,43 @@
 import { PLANS } from "@/lib/plans";
-import { PaymentIntent, PaymentIntentInput, PaymentResult } from "@/types/payment";
+import { PaymentIntentInput, PaymentIntentResponse, PaymentResult } from "@/types/payment";
 import { Plan } from "@/types/plan";
 
-const SIMULATED_DELAY_MS = 1100;
+export async function fetchPlans(): Promise<Plan[]> {
+  return Promise.resolve(PLANS);
+}
 
-async function mockFetch<T>(factory: () => T, failRate = 0): Promise<T> {
-  await new Promise((resolve) => setTimeout(resolve, SIMULATED_DELAY_MS));
+export async function createPaymentIntent(input: PaymentIntentInput): Promise<PaymentIntentResponse> {
+  const response = await fetch('/api/payments/intents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
 
-  if (Math.random() < failRate) {
-    throw new Error("Network temporarily unstable. Please retry.");
+  if (!response.ok) {
+    throw new Error('Failed to create payment intent');
   }
 
-  return factory();
+  return response.json();
 }
 
-export async function fetchPlans(): Promise<Plan[]> {
-  return mockFetch(() => PLANS, 0.05);
+export async function getPaymentIntent(intentId: string): Promise<any> {
+  const response = await fetch(`/api/payments/intents/${intentId}`);
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch payment intent');
+  }
+
+  return response.json();
 }
 
-export async function createPaymentIntent(input: PaymentIntentInput): Promise<PaymentIntent> {
-  return mockFetch(() => ({
-    checkoutId: `chk_${Date.now()}`,
-    method: input.method,
-    amountLabel: "Transfer exact USDT amount",
-    destination: "TRC20 • THX8...A91",
-  }));
-}
-
-export async function confirmPayment(checkoutId: string): Promise<PaymentResult> {
-  return mockFetch(() => {
-    const succeeded = checkoutId.length > 0 && Math.random() > 0.3;
-
-    if (!succeeded) {
-      return {
-        status: "failed",
-        message: "Payment not confirmed yet. Retry or switch method.",
-      };
-    }
-
-    return {
-      status: "success",
-      message: "Payment successful. Your assistant is ready in bot.",
-    };
+export async function verifyPayment(intentId: string): Promise<PaymentResult> {
+  const response = await fetch(`/api/payments/verify/${intentId}`, {
+    method: 'POST',
   });
+
+  if (!response.ok) {
+    throw new Error('Failed to verify payment');
+  }
+
+  return response.json();
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CheckoutPanel } from "@/components/CheckoutPanel";
-import { createPaymentIntent, fetchPlans, confirmPayment } from "@/lib/api";
+import { PaymentMethodSelector } from "@/components/PaymentMethodSelector";
+import { fetchPlans } from "@/lib/api";
 import { trackEvent } from "@/lib/tracking";
 import { useCheckoutStore } from "@/stores/checkout-store";
 import { Plan } from "@/types/plan";
@@ -28,17 +28,12 @@ const FAQ_ITEMS = [
 
 export default function AgentsPage() {
   const selectedPlan = useCheckoutStore((state) => state.selectedPlan);
-  const method = useCheckoutStore((state) => state.method);
   const setPlan = useCheckoutStore((state) => state.setPlan);
-  const setPaymentState = useCheckoutStore((state) => state.setPaymentState);
   const resetPayment = useCheckoutStore((state) => state.resetPayment);
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
-  const [isPaying, setIsPaying] = useState(false);
-  const [checkoutHint, setCheckoutHint] = useState("");
-  const [destination, setDestination] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const [trialMessage, setTrialMessage] = useState("");
 
@@ -86,8 +81,6 @@ export default function AgentsPage() {
     const nextPlan = plans[clampedIndex];
     if (nextPlan && selectedPlan?.id !== nextPlan.id) {
       setPlan(nextPlan);
-      setCheckoutHint("");
-      setDestination("");
       trackEvent("click_choose_plan", { plan: nextPlan.id, source: "carousel" });
     }
   }, [plans, selectedPlan?.id, setPlan]);
@@ -172,8 +165,6 @@ export default function AgentsPage() {
         const nextPlan = plans[nearestIndex];
         if (nextPlan && selectedPlan?.id !== nextPlan.id) {
           setPlan(nextPlan);
-          setCheckoutHint("");
-          setDestination("");
         }
 
         return nearestIndex;
@@ -211,36 +202,8 @@ export default function AgentsPage() {
     };
   }, [activeIndex, hasPlans, scrollToIndex]);
 
-  const handlePay = async () => {
-    if (!selectedPlan) {
-      return;
-    }
-
-    setIsPaying(true);
-    setPaymentState("pending", "Waiting for payment confirmation…");
-    trackEvent("click_pay", { plan: selectedPlan.id, method });
-
-    try {
-      const intent = await createPaymentIntent({ planId: selectedPlan.id, method });
-      setCheckoutHint(intent.amountLabel);
-      setDestination(intent.destination);
-      setPaymentState("pending", "Waiting for payment confirmation…", intent.checkoutId);
-
-      const result = await confirmPayment(intent.checkoutId);
-      setPaymentState(result.status, result.message, intent.checkoutId);
-
-      if (result.status === "success") {
-        trackEvent("payment_success", { plan: selectedPlan.id, method });
-      } else {
-        trackEvent("payment_failed", { plan: selectedPlan.id, method });
-      }
-    } catch (payError) {
-      const message = payError instanceof Error ? payError.message : "Payment failed. Please retry.";
-      setPaymentState("failed", message);
-      trackEvent("payment_failed", { plan: selectedPlan.id, method, reason: message });
-    } finally {
-      setIsPaying(false);
-    }
+  const handlePaymentComplete = () => {
+    trackEvent("payment_success", { plan: selectedPlan?.id });
   };
 
   return (
@@ -391,8 +354,6 @@ export default function AgentsPage() {
               type="button"
               onClick={() => {
                 setPlan(explorePlan);
-                setCheckoutHint("");
-                setDestination("");
                 setTrialMessage("Explore Plan selected in checkout.");
                 trackEvent("click_view_plans", { source: "trial" });
               }}
@@ -415,19 +376,12 @@ export default function AgentsPage() {
             </div>
           </section>
 
-          <CheckoutPanel
-            isPaying={isPaying}
-            checkoutHint={checkoutHint}
-            destination={destination}
-            onPay={handlePay}
-          />
+          <PaymentMethodSelector onPaymentComplete={handlePaymentComplete} />
 
           <button
             type="button"
             onClick={() => {
               resetPayment();
-              setCheckoutHint("");
-              setDestination("");
               setTrialMessage("");
             }}
             className="min-h-11 rounded-xl border border-[#b8bdfd] bg-white/95 px-4 text-base font-semibold text-ink/85 transition-colors duration-200 hover:border-[#4f46e5] hover:text-[#4f46e5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2 cursor-pointer"

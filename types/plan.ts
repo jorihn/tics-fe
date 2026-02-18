@@ -1,4 +1,4 @@
-export type PlanTier = "savings" | "standard" | "explore";
+export type PlanTier = "donate" | "savings" | "standard" | "explore";
 
 export interface Plan {
   id: PlanTier;
@@ -13,6 +13,6 @@ export interface Plan {
   includes: string[];
   tradeOffs?: string[];
   ctaLabel: string;
-  period: "month";
+  period: "month" | "once";
   highlight?: string;
 }

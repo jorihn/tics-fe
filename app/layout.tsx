@@ -3,6 +3,7 @@ import { Nunito_Sans, Rubik } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
+import { TonConnectProvider } from "@/components/TonConnectProvider";
 
 const nunitoSans = Nunito_Sans({
   subsets: ["latin"],
@@ -29,7 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${nunitoSans.variable} ${rubik.variable} bg-canvas font-body text-ink antialiased`}>
-        <AppShell>{children}</AppShell>
+        <TonConnectProvider>
+          <AppShell>{children}</AppShell>
+        </TonConnectProvider>
       </body>
     </html>
   );
