@@ -11,6 +11,13 @@ interface TelegramThemeParams {
   secondary_bg_color?: string;
 }
 
+interface TelegramBackButton {
+  show: () => void;
+  hide: () => void;
+  onClick: (callback: () => void) => void;
+  offClick: (callback: () => void) => void;
+}
+
 interface TelegramWebApp {
   initDataUnsafe?: {
     user?: {
@@ -22,6 +29,8 @@ interface TelegramWebApp {
   themeParams: TelegramThemeParams;
   ready: () => void;
   expand: () => void;
+  requestFullscreen?: () => void;
+  BackButton?: TelegramBackButton;
 }
 
 declare global {
@@ -67,6 +76,12 @@ export function useTelegramWebApp(): TelegramWebAppState {
     }
 
     webApp.ready();
+
+    if (typeof webApp.requestFullscreen === "function") {
+      webApp.requestFullscreen();
+      return;
+    }
+
     webApp.expand();
   }, [webApp]);
 
