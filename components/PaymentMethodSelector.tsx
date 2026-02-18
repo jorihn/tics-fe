@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTonConnectUI, useTonWallet } from "@tonconnect/ui-react";
+import { beginCell } from "@ton/ton";
 import { PaymentAsset } from "@/types/payment";
 import { useCheckoutStore } from "@/stores/checkout-store";
 import { createPaymentIntent, getPaymentIntent, verifyPayment } from "@/lib/api";
@@ -24,6 +25,14 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
   const wallet = useTonWallet();
   const [intentData, setIntentData] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+
+  const toBase64 = (bytes: Uint8Array): string => {
+    let binary = "";
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    return btoa(binary);
+  };
 
   useEffect(() => {
     if (!intentData?.quote_expires_at) return;
@@ -84,6 +93,9 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
     try {
       if (asset === "TON") {
         const amountNano = Math.floor(intentData.amount_expected * 1e9).toString();
+        const payload = toBase64(
+          beginCell().storeUint(0, 32).storeStringTail(intentData.intent_id).endCell().toBoc()
+        );
         
         const transaction = {
           validUntil: Math.floor(Date.now() / 1000) + 600,
@@ -91,7 +103,7 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
             {
               address: intentData.wallet_address,
               amount: amountNano,
-              payload: intentData.intent_id,
+              payload,
             }
           ]
         };
