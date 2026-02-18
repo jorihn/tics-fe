@@ -418,7 +418,13 @@ npm version minor
 npm version major
 ```
 
-## 3) Tạo GitHub Release
+## 3) Push code
+```bash
+git push origin main
+git push origin --tags
+```
+
+## 4) Tạo GitHub Release
 Trên GitHub:
 
 Releases → Draft new release
@@ -426,7 +432,7 @@ Chọn tag vừa tạo
 Ghi notes (feature/fix/breaking)
 Publish
 
-## 4) Deploy production theo tag (khuyên dùng)
+## 5) Deploy production theo tag (khuyên dùng)
 Trên VPS:
 
 ```bash
