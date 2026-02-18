@@ -16,6 +16,7 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
   const asset = useCheckoutStore((state) => state.asset);
   const setAsset = useCheckoutStore((state) => state.setAsset);
   const paymentStatus = useCheckoutStore((state) => state.paymentStatus);
+  const paymentMessage = useCheckoutStore((state) => state.paymentMessage);
   const setPaymentState = useCheckoutStore((state) => state.setPaymentState);
   const intentId = useCheckoutStore((state) => state.intentId);
 
@@ -99,7 +100,7 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
         setPaymentState("pending", "Transaction sent. Waiting for confirmation...");
         
         setTimeout(() => {
-          handleVerify();
+          handleVerify(true);
         }, 5000);
       } else {
         alert(
@@ -117,12 +118,25 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
     }
   };
 
-  const handleVerify = async () => {
+  const handleVerify = async (isAutoCheck = false) => {
     if (!intentData) return;
 
     try {
       setPaymentState("pending", "Verifying payment...");
       const result = await verifyPayment(intentData.intent_id);
+
+      if (
+        isAutoCheck &&
+        result.status === "failed" &&
+        typeof result.message === "string" &&
+        result.message.toLowerCase().includes("not found on blockchain")
+      ) {
+        setPaymentState(
+          "idle",
+          "Transaction sent. Waiting for blockchain confirmation. Please click Verify Payment in a few seconds."
+        );
+        return;
+      }
 
       setPaymentState(result.status, result.message);
 
@@ -289,7 +303,9 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
       {paymentStatus === "failed" && (
         <div className="rounded-xl border border-rose-300 bg-rose-50 p-4">
           <p className="text-base font-semibold text-rose-800">❌ Payment failed</p>
-          <p className="text-sm text-rose-700 mt-1">Please try again or contact support.</p>
+          <p className="text-sm text-rose-700 mt-1">
+            {paymentMessage || "Please try again or contact support."}
+          </p>
         </div>
       )}
 
@@ -297,6 +313,12 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
           <p className="text-base font-semibold text-amber-800">⏱️ Quote expired</p>
           <p className="text-sm text-amber-700 mt-1">Please create a new payment intent.</p>
+        </div>
+      )}
+
+      {paymentStatus === "idle" && paymentMessage && (
+        <div className="rounded-xl border border-sky-300 bg-sky-50 p-4">
+          <p className="text-sm text-sky-800">{paymentMessage}</p>
         </div>
       )}
 
@@ -322,7 +344,7 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
             </button>
             <button
               type="button"
-              onClick={handleVerify}
+              onClick={() => handleVerify(false)}
               className="flex-1 min-h-12 rounded-xl border border-borderTone bg-white text-ink text-base font-semibold transition-colors duration-200 hover:border-[#4f46e5] hover:text-[#4f46e5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2"
             >
               Verify Payment
