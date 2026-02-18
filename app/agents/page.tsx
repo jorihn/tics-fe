@@ -269,7 +269,7 @@ export default function AgentsPage() {
           </button>
         </section>
       ) : (
-        <div className="grid gap-5">
+        <div className="grid grid-cols-1 gap-5 [&>*]:min-w-0">
           <section>
             <div
               ref={carouselRef}
@@ -364,7 +364,7 @@ export default function AgentsPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-[#b8bdfd] bg-white/95 p-5">
+          <section className="w-full rounded-2xl border border-[#b8bdfd] bg-white/95 p-5">
             <h2 className="font-heading text-2xl font-semibold text-ink">Need a quick recommendation?</h2>
             <p className="mt-2 text-base leading-7 text-ink/80">
               If you want the safest choice for consistent weekly execution, start with the plan in the center, then move up if your workload grows.
@@ -372,7 +372,7 @@ export default function AgentsPage() {
             <p className="mt-2 text-base font-semibold text-[#3f46b5]">You can upgrade later without losing your context.</p>
           </section>
 
-          <section className="rounded-2xl border border-borderTone bg-gradient-to-r from-[#eef0ff] via-white to-[#e8fff7] p-5">
+          <section className="w-full rounded-2xl border border-borderTone bg-gradient-to-r from-[#eef0ff] via-white to-[#e8fff7] p-5">
             <h2 className="font-heading text-2xl font-semibold text-ink">Explore Plan</h2>
             <p className="mt-1 text-base leading-7 text-ink/80">
               Same model as Savings, with a smaller $10 API credit bundle to get started.
@@ -403,7 +403,7 @@ export default function AgentsPage() {
             {trialMessage ? <p className="mt-2 text-sm text-ink/70">{trialMessage}</p> : null}
           </section>
 
-          <section className="rounded-2xl border border-borderTone bg-white/95 p-5">
+          <section className="w-full rounded-2xl border border-borderTone bg-white/95 p-5">
             <h2 className="font-heading text-2xl font-semibold text-ink">Quick answers before you pay</h2>
             <div className="mt-3 space-y-3">
               {FAQ_ITEMS.map((item) => (

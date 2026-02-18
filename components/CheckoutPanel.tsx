@@ -17,7 +17,7 @@ export function CheckoutPanel({ isPaying, checkoutHint, destination, onPay }: Ch
   const disabled = !selectedPlan || isPaying || paymentStatus === "pending";
 
   return (
-    <section className="sticky top-3 rounded-2xl border border-borderTone bg-gradient-to-br from-white via-[#f2f3ff] to-[#ebfff7] p-5">
+    <section className="sticky top-3 w-full min-w-0 rounded-2xl border border-borderTone bg-gradient-to-br from-white via-[#f2f3ff] to-[#ebfff7] p-5">
       <h2 className="font-heading text-2xl font-semibold text-ink">Checkout</h2>
 
       {!selectedPlan ? (
@@ -43,7 +43,7 @@ export function CheckoutPanel({ isPaying, checkoutHint, destination, onPay }: Ch
       {checkoutHint ? (
         <div className="mt-3 rounded-xl border border-[#b8bdfd] bg-white/90 p-4 text-sm leading-7 text-ink/85">
           <p>{checkoutHint}</p>
-          {destination ? <p className="mt-1 text-base font-semibold text-[#3f46b5]">{destination}</p> : null}
+          {destination ? <p className="mt-1 break-all text-base font-semibold text-[#3f46b5]">{destination}</p> : null}
         </div>
       ) : null}
 

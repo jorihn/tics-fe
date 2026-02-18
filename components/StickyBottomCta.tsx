@@ -8,7 +8,7 @@ interface StickyBottomCtaProps {
 }
 
 export function StickyBottomCta({ onClick }: StickyBottomCtaProps) {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const ctaTargets = Array.from(
@@ -18,13 +18,6 @@ export function StickyBottomCta({ onClick }: StickyBottomCtaProps) {
     if (ctaTargets.length === 0) {
       return;
     }
-
-    const isInViewport = (element: Element) => {
-      const rect = element.getBoundingClientRect();
-      return rect.bottom > 0 && rect.top < window.innerHeight;
-    };
-
-    setIsVisible(!ctaTargets.some((element) => isInViewport(element)));
 
     const visibleTargets = new Set<Element>();
 
