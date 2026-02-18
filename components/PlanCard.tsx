@@ -16,7 +16,7 @@ export function PlanCard({ plan, selected, onSelect }: PlanCardProps) {
       }`}
     >
       {plan.highlight ? (
-        <span className="absolute right-4 top-4 rounded-full border border-[#9aa2ff] bg-[#eef0ff] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#3f46b5]">
+        <span className="absolute right-4 top-4 rounded-full border border-[#9aa2ff] bg-[#eef0ff] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#3f46b5]">
           {plan.highlight}
         </span>
       ) : null}

@@ -244,10 +244,11 @@ export default function AgentsPage() {
   };
 
   return (
-    <main className="space-y-4 pb-4">
-      <header className="rounded-2xl border border-[#b8bdfd] bg-gradient-to-r from-[#edf0ff] via-white to-[#e7fff6] p-5">
-        <h1 className="font-heading text-3xl font-bold text-ink">Choose your plan</h1>
-        <p className="mt-2 text-sm text-ink/75">One payment, instant activation in Telegram. No complex setup.</p>
+    <main className="space-y-6 pb-4">
+      <header className="rounded-2xl border border-[#b8bdfd] bg-gradient-to-r from-[#edf0ff] via-white to-[#e7fff6] p-6">
+        <h1 className="font-heading text-4xl font-bold text-ink">Choose your plan</h1>
+        <p className="mt-2 text-base leading-7 text-ink/80">Pick a plan, pay with USDT, and go live in Telegram in minutes.</p>
+        <p className="mt-2 text-base font-semibold text-ink">Decision flow: compare → select → activate.</p>
       </header>
 
       {isLoading ? (
@@ -258,21 +259,21 @@ export default function AgentsPage() {
         </section>
       ) : error ? (
         <section className="rounded-2xl border border-rose-300 bg-[#fff2f2] p-4">
-          <p className="text-sm text-rose-900">{error}</p>
+          <p className="text-base text-rose-900">{error}</p>
           <button
             type="button"
             onClick={loadPlans}
-            className="mt-3 min-h-11 rounded-xl border border-rose-300 bg-white px-4 text-sm font-semibold text-rose-800 transition-colors duration-200 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:ring-offset-2 cursor-pointer"
+            className="mt-3 min-h-11 rounded-xl border border-rose-300 bg-white px-4 text-base font-semibold text-rose-800 transition-colors duration-200 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:ring-offset-2 cursor-pointer"
           >
             Retry loading plans
           </button>
         </section>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-5">
           <section>
             <div
               ref={carouselRef}
-              className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               aria-label="Plan carousel"
             >
               {plans.map((plan, index) => {
@@ -281,35 +282,35 @@ export default function AgentsPage() {
                 return (
                   <article
                     key={plan.id}
-                    className={`w-[86%] shrink-0 snap-center rounded-2xl border p-5 transition-colors duration-200 sm:w-[72%] ${
+                    className={`w-[86%] shrink-0 snap-center rounded-2xl border p-6 transition-colors duration-200 sm:w-[70%] ${
                       isSelected
                         ? "border-[#6366f1] bg-gradient-to-br from-[#f2f2ff] via-[#ffffff] to-[#eafff6]"
                         : "border-borderTone bg-[var(--surface)]"
                     }`}
                   >
                     {plan.badge ? (
-                      <span className="inline-flex rounded-full border border-[#9aa2ff] bg-[#eef0ff] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#3f46b5]">
+                      <span className="inline-flex rounded-full border border-[#9aa2ff] bg-[#eef0ff] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#3f46b5]">
                         {plan.badge}
                       </span>
                     ) : null}
 
                     <h2 className="mt-3 font-heading text-2xl font-bold text-ink">{plan.name}</h2>
                     <p className="mt-1 font-heading text-4xl font-bold text-ink">{plan.priceLabel}</p>
-                    <p className="text-xs text-ink/70">{plan.priceNote}</p>
+                    <p className="text-sm leading-6 text-ink/75">{plan.priceNote}</p>
 
                     {plan.id === "savings" ? (
-                      <p className="mt-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">
+                      <p className="mt-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
                         Tool fee: FREE. You only pay for API credits.
                       </p>
                     ) : null}
 
-                    <p className="mt-3 text-sm font-semibold text-ink">Best for</p>
-                    <p className="text-sm text-ink/80">{plan.bestFor}</p>
+                    <p className="mt-3 text-base font-semibold text-ink">Best for</p>
+                    <p className="text-base leading-7 text-ink/80">{plan.bestFor}</p>
 
-                    <p className="mt-3 text-sm font-semibold text-ink">Includes</p>
+                    <p className="mt-3 text-base font-semibold text-ink">Includes</p>
                     <ul className="mt-2 space-y-2">
                       {plan.includes.map((item) => (
-                        <li key={item} className="flex items-start gap-2 text-sm text-ink/80">
+                        <li key={item} className="flex items-start gap-2 text-base leading-7 text-ink/80">
                           <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#4f46e5]" aria-hidden="true" />
                           <span>{item}</span>
                         </li>
@@ -318,10 +319,10 @@ export default function AgentsPage() {
 
                     {plan.tradeOffs?.length ? (
                       <>
-                        <p className="mt-3 text-sm font-semibold text-ink">Trade-offs</p>
+                        <p className="mt-3 text-base font-semibold text-ink">Trade-offs</p>
                         <ul className="mt-2 space-y-2">
                           {plan.tradeOffs.map((item) => (
-                            <li key={item} className="flex items-start gap-2 text-sm text-ink/75">
+                            <li key={item} className="flex items-start gap-2 text-base leading-7 text-ink/75">
                               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#f59e0b]" aria-hidden="true" />
                               <span>{item}</span>
                             </li>
@@ -333,7 +334,7 @@ export default function AgentsPage() {
                     <button
                       type="button"
                       onClick={() => scrollToIndex(index)}
-                      className={`mt-4 min-h-11 w-full rounded-xl border px-4 text-sm font-bold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2 cursor-pointer ${
+                      className={`mt-4 min-h-12 w-full rounded-xl border px-4 text-base font-bold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2 cursor-pointer ${
                         isSelected
                           ? "border-[#4f46e5] bg-gradient-to-r from-[#4f46e5] to-[#10b981] text-white hover:opacity-90"
                           : "border-borderTone bg-white text-ink hover:border-[#4f46e5] hover:text-[#4f46e5]"
@@ -363,17 +364,25 @@ export default function AgentsPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-borderTone bg-gradient-to-r from-[#eef0ff] via-white to-[#e8fff7] p-4">
-            <h2 className="font-heading text-xl font-semibold text-ink">Explore Plan</h2>
-            <p className="mt-1 text-sm text-ink/75">
+          <section className="rounded-2xl border border-[#b8bdfd] bg-white/95 p-5">
+            <h2 className="font-heading text-2xl font-semibold text-ink">Need a quick recommendation?</h2>
+            <p className="mt-2 text-base leading-7 text-ink/80">
+              If you want the safest choice for consistent weekly execution, start with the plan in the center, then move up if your workload grows.
+            </p>
+            <p className="mt-2 text-base font-semibold text-[#3f46b5]">You can upgrade later without losing your context.</p>
+          </section>
+
+          <section className="rounded-2xl border border-borderTone bg-gradient-to-r from-[#eef0ff] via-white to-[#e8fff7] p-5">
+            <h2 className="font-heading text-2xl font-semibold text-ink">Explore Plan</h2>
+            <p className="mt-1 text-base leading-7 text-ink/80">
               Same model as Savings, with a smaller $10 API credit bundle to get started.
             </p>
             <ul className="mt-2 space-y-2">
-              <li className="flex items-start gap-2 text-sm text-ink/80">
+              <li className="flex items-start gap-2 text-base leading-7 text-ink/80">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#4f46e5]" aria-hidden="true" />
                 <span>Tool fee is free; you only pay for API usage</span>
               </li>
-              <li className="flex items-start gap-2 text-sm text-ink/80">
+              <li className="flex items-start gap-2 text-base leading-7 text-ink/80">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#4f46e5]" aria-hidden="true" />
                 <span>$10 API credits included</span>
               </li>
@@ -387,20 +396,20 @@ export default function AgentsPage() {
                 setTrialMessage("Explore Plan selected in checkout.");
                 trackEvent("click_view_plans", { source: "trial" });
               }}
-              className="mt-3 min-h-11 rounded-xl border border-[#4f46e5] bg-white px-4 text-sm font-semibold text-[#4f46e5] transition-colors duration-200 hover:bg-[#eef0ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2 cursor-pointer"
+              className="mt-3 min-h-11 rounded-xl border border-[#4f46e5] bg-white px-4 text-base font-semibold text-[#4f46e5] transition-colors duration-200 hover:bg-[#eef0ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2 cursor-pointer"
             >
               Start Trial
             </button>
-            {trialMessage ? <p className="mt-2 text-xs text-ink/70">{trialMessage}</p> : null}
+            {trialMessage ? <p className="mt-2 text-sm text-ink/70">{trialMessage}</p> : null}
           </section>
 
-          <section className="rounded-2xl border border-borderTone bg-white/95 p-4">
-            <h2 className="font-heading text-xl font-semibold text-ink">Quick answers before you pay</h2>
+          <section className="rounded-2xl border border-borderTone bg-white/95 p-5">
+            <h2 className="font-heading text-2xl font-semibold text-ink">Quick answers before you pay</h2>
             <div className="mt-3 space-y-3">
               {FAQ_ITEMS.map((item) => (
                 <article key={item.question} className="rounded-xl border border-[#d9dcff] bg-[#fafaff] p-3">
-                  <p className="text-sm font-semibold text-ink">{item.question}</p>
-                  <p className="mt-1 text-sm text-ink/75">{item.answer}</p>
+                  <p className="text-base font-semibold text-ink">{item.question}</p>
+                  <p className="mt-1 text-base leading-7 text-ink/75">{item.answer}</p>
                 </article>
               ))}
             </div>
@@ -421,7 +430,7 @@ export default function AgentsPage() {
               setDestination("");
               setTrialMessage("");
             }}
-            className="min-h-11 rounded-xl border border-[#b8bdfd] bg-white/95 px-4 text-sm font-semibold text-ink/85 transition-colors duration-200 hover:border-[#4f46e5] hover:text-[#4f46e5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2 cursor-pointer"
+            className="min-h-11 rounded-xl border border-[#b8bdfd] bg-white/95 px-4 text-base font-semibold text-ink/85 transition-colors duration-200 hover:border-[#4f46e5] hover:text-[#4f46e5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2 cursor-pointer"
           >
             Clear payment state
           </button>

@@ -1,4 +1,4 @@
-export type PaymentMethod = "vnd" | "usdt";
+export type PaymentMethod = "usdt";
 
 export type PaymentStatus = "idle" | "pending" | "success" | "failed";
 

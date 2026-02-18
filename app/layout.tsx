@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Exo_2, Orbitron } from "next/font/google";
+import { Nunito_Sans, Rubik } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 
-const exo2 = Exo_2({
+const nunitoSans = Nunito_Sans({
   subsets: ["latin"],
-  variable: "--font-exo2",
+  variable: "--font-nunito-sans",
   display: "swap",
 });
 
-const orbitron = Orbitron({
+const rubik = Rubik({
   subsets: ["latin"],
-  variable: "--font-orbitron",
+  variable: "--font-rubik",
   display: "swap",
 });
 
@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${exo2.variable} ${orbitron.variable} bg-canvas font-body text-ink antialiased`}>
+      <body className={`${nunitoSans.variable} ${rubik.variable} bg-canvas font-body text-ink antialiased`}>
         <AppShell>{children}</AppShell>
       </body>
     </html>

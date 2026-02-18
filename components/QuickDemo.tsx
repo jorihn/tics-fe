@@ -31,7 +31,7 @@ const DEMO_STEPS = [
 export function QuickDemo({ onPrimaryClick }: QuickDemoProps) {
   return (
     <section id="quick-demo" className="rounded-2xl border border-[#b8bdfd] bg-gradient-to-r from-[#edf0ff] via-white to-[#e7fff6] p-4">
-      <p className="inline-flex items-center gap-2 rounded-full border border-[#b8bdfd] bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink/70">
+      <p className="inline-flex items-center gap-2 rounded-full border border-[#b8bdfd] bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-ink/70">
         <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
           <path d="M8 6v12l10-6-10-6z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>

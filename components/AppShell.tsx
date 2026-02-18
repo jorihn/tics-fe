@@ -58,5 +58,5 @@ export function AppShell({ children }: AppShellProps) {
     return;
   }, [pathname, router, webApp]);
 
-  return <div className="mx-auto min-h-screen w-full max-w-[520px] px-4 pb-28 pt-5 sm:px-6">{children}</div>;
+  return <div className="mx-auto min-h-screen w-full max-w-[680px] px-4 pb-28 pt-6 sm:px-7">{children}</div>;
 }

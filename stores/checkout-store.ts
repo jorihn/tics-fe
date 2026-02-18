@@ -18,7 +18,7 @@ interface CheckoutState {
 
 export const useCheckoutStore = create<CheckoutState>((set) => ({
   selectedPlan: null,
-  method: "vnd",
+  method: "usdt",
   paymentStatus: "idle",
   checkoutId: null,
   paymentMessage: "",

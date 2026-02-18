@@ -19,21 +19,21 @@ const REASONS = [
 export function WhyThisWorks() {
   return (
     <section className="mt-5 rounded-2xl border border-borderTone bg-gradient-to-br from-white via-[#f0f3ff] to-[#ecfffa] p-5">
-      <h2 className="font-heading text-xl font-semibold text-ink">Why this works better than typical AI tools</h2>
+      <h2 className="font-heading text-2xl font-semibold text-ink">Why this works better than typical AI tools</h2>
       <ul className="mt-3 space-y-3">
         {REASONS.map((reason, index) => (
           <li
             key={reason.title}
-            className="flex items-start gap-3 rounded-xl border border-[#b8bdfd] bg-white/95 p-3 text-sm leading-6 text-ink/85 transition-transform duration-200 hover:-translate-y-0.5"
+            className="flex items-start gap-3 rounded-xl border border-[#b8bdfd] bg-white/95 p-4 text-base leading-7 text-ink/85 transition-transform duration-200 hover:-translate-y-0.5"
             style={{ animation: "fade-up 0.5s ease-out both", animationDelay: `${index * 0.06}s` }}
           >
-            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#6366f1] to-[#10b981] text-xs font-bold text-white">
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
+            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#6366f1] to-[#10b981] text-xs font-bold text-white">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
                 {reason.icon}
               </svg>
             </span>
             <span>
-              <span className="block font-semibold text-ink">{reason.title}</span>
+              <span className="block text-base font-semibold text-ink">{reason.title}</span>
               <span className="text-ink/75">{reason.description}</span>
             </span>
           </li>

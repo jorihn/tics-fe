@@ -19,8 +19,8 @@ const config: Config = {
         cta: "0 12px 30px -12px rgba(255, 95, 46, 0.55)",
       },
       fontFamily: {
-        heading: ["var(--font-orbitron)", "sans-serif"],
-        body: ["var(--font-exo2)", "sans-serif"],
+        heading: ["var(--font-rubik)", "sans-serif"],
+        body: ["var(--font-nunito-sans)", "sans-serif"],
       },
     },
   },

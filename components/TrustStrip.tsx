@@ -16,11 +16,11 @@ const TRUST_ITEMS = [
 export function TrustStrip() {
   return (
     <section className="mt-5 rounded-2xl border border-borderTone bg-gradient-to-r from-[#eef0ff] via-white to-[#e8fff7] p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/60">Trusted checkout</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-ink/60">Trusted checkout</p>
       <div className="mt-2 flex flex-wrap gap-2">
         {TRUST_ITEMS.map((item) => (
-          <span key={item.label} className="inline-flex items-center gap-1.5 rounded-full border border-[#b8bdfd] bg-white/95 px-3 py-1 text-xs font-semibold text-ink/75">
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-[#4f46e5]" fill="none" aria-hidden="true">
+          <span key={item.label} className="inline-flex items-center gap-1.5 rounded-full border border-[#b8bdfd] bg-white/95 px-3 py-1.5 text-sm font-semibold text-ink/75">
+            <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#4f46e5]" fill="none" aria-hidden="true">
               {item.icon}
             </svg>
             {item.label}

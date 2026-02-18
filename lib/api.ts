@@ -22,8 +22,8 @@ export async function createPaymentIntent(input: PaymentIntentInput): Promise<Pa
   return mockFetch(() => ({
     checkoutId: `chk_${Date.now()}`,
     method: input.method,
-    amountLabel: input.method === "vnd" ? "Scan VietQR or pay via Sepay" : "Transfer exact USDT amount",
-    destination: input.method === "vnd" ? "VCB • 1055 000 8899" : "TRC20 • THX8...A91",
+    amountLabel: "Transfer exact USDT amount",
+    destination: "TRC20 • THX8...A91",
   }));
 }
 
