@@ -4,6 +4,7 @@ import { getTONPrice, calculateTONAmount } from '@/lib/ton-price';
 import { savePaymentIntent } from '@/lib/payment-db';
 
 const PLAN_PRICES: Record<string, number> = {
+  donate: 0.001,
   explore: 10,
   savings: 20,
   standard: 30,
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const plan_usd = PLAN_PRICES[planId];
-    if (!plan_usd) {
+    if (plan_usd === undefined) {
       return NextResponse.json(
         { error: 'Invalid plan ID' },
         { status: 400 }

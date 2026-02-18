@@ -14,7 +14,8 @@ export async function createPaymentIntent(input: PaymentIntentInput): Promise<Pa
   });
 
   if (!response.ok) {
-    throw new Error('Failed to create payment intent');
+    const errorBody = await response.json().catch(() => null);
+    throw new Error(errorBody?.error || 'Failed to create payment intent');
   }
 
   return response.json();
