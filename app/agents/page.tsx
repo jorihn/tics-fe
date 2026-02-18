@@ -38,7 +38,9 @@ export default function AgentsPage() {
   const [trialMessage, setTrialMessage] = useState("");
 
   const carouselRef = useRef<HTMLDivElement | null>(null);
+  const paymentRef = useRef<HTMLDivElement | null>(null);
   const hasAlignedDefaultRef = useRef(false);
+  const shouldScrollToPayment = useRef(false);
 
   const hasPlans = plans.length > 0;
 
@@ -62,6 +64,32 @@ export default function AgentsPage() {
     period: "month",
   };
 
+  const scrollToPayment = useCallback(() => {
+    if (paymentRef.current) {
+      paymentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
+  const handlePlanSelect = useCallback((
+    plan: Plan,
+    options?: { shouldScroll?: boolean; source?: "button" | "trial" }
+  ) => {
+    const shouldScroll = options?.shouldScroll ?? false;
+    const source = options?.source ?? "button";
+
+    if (shouldScroll && selectedPlan?.id === plan.id) {
+      scrollToPayment();
+    } else if (shouldScroll) {
+      shouldScrollToPayment.current = true;
+    }
+
+    if (selectedPlan?.id !== plan.id) {
+      setPlan(plan);
+    }
+
+    trackEvent("click_choose_plan", { plan: plan.id, source });
+  }, [scrollToPayment, selectedPlan?.id, setPlan]);
+
   const scrollToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, plans.length - 1));
     const container = carouselRef.current;
@@ -77,13 +105,7 @@ export default function AgentsPage() {
 
     targetCard.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     setActiveIndex(clampedIndex);
-
-    const nextPlan = plans[clampedIndex];
-    if (nextPlan && selectedPlan?.id !== nextPlan.id) {
-      setPlan(nextPlan);
-      trackEvent("click_choose_plan", { plan: nextPlan.id, source: "carousel" });
-    }
-  }, [plans, selectedPlan?.id, setPlan]);
+  }, [plans]);
 
   const loadPlans = useCallback(async () => {
     setIsLoading(true);
@@ -112,6 +134,16 @@ export default function AgentsPage() {
     trackEvent("view_agent_plans");
     loadPlans();
   }, [loadPlans]);
+
+  useEffect(() => {
+    if (selectedPlan && shouldScrollToPayment.current) {
+      const timer = setTimeout(() => {
+        scrollToPayment();
+        shouldScrollToPayment.current = false;
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedPlan?.id, scrollToPayment]);
 
   useEffect(() => {
     const container = carouselRef.current;
@@ -157,18 +189,7 @@ export default function AgentsPage() {
         }
       });
 
-      setActiveIndex((prev) => {
-        if (prev === nearestIndex) {
-          return prev;
-        }
-
-        const nextPlan = plans[nearestIndex];
-        if (nextPlan && selectedPlan?.id !== nextPlan.id) {
-          setPlan(nextPlan);
-        }
-
-        return nearestIndex;
-      });
+      setActiveIndex((prev) => (prev === nearestIndex ? prev : nearestIndex));
     };
 
     container.addEventListener("scroll", onScroll, { passive: true });
@@ -176,7 +197,7 @@ export default function AgentsPage() {
     return () => {
       container.removeEventListener("scroll", onScroll);
     };
-  }, [hasPlans, plans, selectedPlan?.id, setPlan]);
+  }, [hasPlans]);
 
   useEffect(() => {
     if (!hasPlans) {
@@ -296,7 +317,7 @@ export default function AgentsPage() {
 
                     <button
                       type="button"
-                      onClick={() => scrollToIndex(index)}
+                      onClick={() => handlePlanSelect(plan, { shouldScroll: true, source: "button" })}
                       className={`mt-4 min-h-12 w-full rounded-xl border px-4 text-base font-bold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2 cursor-pointer ${
                         isSelected
                           ? "border-[#4f46e5] bg-gradient-to-r from-[#4f46e5] to-[#10b981] text-white hover:opacity-90"
@@ -353,9 +374,8 @@ export default function AgentsPage() {
             <button
               type="button"
               onClick={() => {
-                setPlan(explorePlan);
+                handlePlanSelect(explorePlan, { shouldScroll: true, source: "trial" });
                 setTrialMessage("Explore Plan selected in checkout.");
-                trackEvent("click_view_plans", { source: "trial" });
               }}
               className="mt-3 min-h-11 rounded-xl border border-[#4f46e5] bg-white px-4 text-base font-semibold text-[#4f46e5] transition-colors duration-200 hover:bg-[#eef0ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] focus-visible:ring-offset-2 cursor-pointer"
             >
@@ -376,7 +396,9 @@ export default function AgentsPage() {
             </div>
           </section>
 
-          <PaymentMethodSelector onPaymentComplete={handlePaymentComplete} />
+          <div ref={paymentRef}>
+            <PaymentMethodSelector onPaymentComplete={handlePaymentComplete} />
+          </div>
 
           <button
             type="button"

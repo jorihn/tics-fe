@@ -216,6 +216,36 @@ export function PaymentMethodSelector({ onPaymentComplete }: PaymentMethodSelect
         </button>
       </div>
 
+      {!intentData && selectedPlan && (
+        <div className="rounded-xl border border-[#d9dcff] bg-[#fafaff] p-4 space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-base font-semibold text-ink">Estimated Amount:</span>
+            <span className="text-base font-bold text-ink">
+              {selectedPlan.id === 'donate' 
+                ? '0.001 TON'
+                : asset === "TON" 
+                  ? `~${(selectedPlan.priceValue / 6).toFixed(2)} TON`
+                  : `$${selectedPlan.priceValue} USDT`
+              }
+            </span>
+          </div>
+          
+          {selectedPlan.id !== 'donate' && asset === "TON" && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-ink/75">Plan price:</span>
+              <span className="text-sm text-ink/75">${selectedPlan.priceValue} USD</span>
+            </div>
+          )}
+
+          <p className="text-xs text-ink/60 pt-2 border-t border-[#d9dcff]">
+            {asset === "TON" 
+              ? "Exact amount will be calculated at current TON/USD rate when you create payment."
+              : "Fixed USDT amount based on plan price."
+            }
+          </p>
+        </div>
+      )}
+
       {intentData && (
         <div className="rounded-xl border border-[#d9dcff] bg-[#fafaff] p-4 space-y-2">
           <div className="flex justify-between items-center">
