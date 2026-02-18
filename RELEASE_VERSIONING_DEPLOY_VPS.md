@@ -398,3 +398,48 @@ Usually app process is down or wrong port in `proxy_pass`.
 ---
 
 Owner: update this guide whenever release/deploy process changes.
+
+
+# STEP CỤ THỂ
+## 1) Trước khi bump version, đảm bảo repo sạch
+```bash
+git status
+git checkout main
+```
+
+Nếu còn cái chưa commit thì phải commit hoặc bỏ thay đổi local
+
+## 2) Dùng 1 trong 3 lệnh để pump version
+```bash
+npm version patch
+# hoặc
+npm version minor
+# hoặc
+npm version major
+```
+
+## 3) Tạo GitHub Release
+Trên GitHub:
+
+Releases → Draft new release
+Chọn tag vừa tạo
+Ghi notes (feature/fix/breaking)
+Publish
+
+## 4) Deploy production theo tag (khuyên dùng)
+Trên VPS:
+
+```bash
+cd /root/app/tics-fe
+git fetch --tags
+git checkout vX.Y.Z
+npm ci
+npm run build
+pm2 restart tics-fe
+```
+Kiểm tra:
+
+```bash
+pm2 status
+curl -I https://tics.network
+```
