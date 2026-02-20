@@ -1,7 +1,7 @@
 "use client";
 
-import { backButton, init, initData, viewport } from "@tma.js/sdk";
-import { useEffect, useMemo } from "react";
+import { backButton, init, initData, miniApp, themeParams, viewport } from "@tma.js/sdk";
+import { useEffect, useMemo, useState } from "react";
 
 interface TelegramThemeParams {
   bg_color?: string;
@@ -10,6 +10,15 @@ interface TelegramThemeParams {
   button_text_color?: string;
   hint_color?: string;
   secondary_bg_color?: string;
+}
+
+interface SdkMiniApp {
+  mount?: () => void;
+  ready?: () => void;
+}
+
+interface SdkThemeParams {
+  mount?: () => void;
 }
 
 interface TelegramBackButtonController {
@@ -79,19 +88,51 @@ const FALLBACK_THEME = {
 };
 
 export function useTelegramWebApp(): TelegramWebAppState {
-  const webApp = useMemo<TelegramWebApp | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    return window.Telegram?.WebApp ?? null;
-  }, []);
+  const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
+  const [startParam, setStartParam] = useState<string | undefined>(undefined);
 
   const sdkBackButton = useMemo<SdkBackButton>(() => backButton as unknown as SdkBackButton, []);
 
   const sdkInitData = useMemo<SdkInitData>(() => initData as unknown as SdkInitData, []);
 
   const sdkViewport = useMemo<SdkViewport>(() => viewport as unknown as SdkViewport, []);
+
+  const sdkMiniApp = useMemo<SdkMiniApp>(() => miniApp as unknown as SdkMiniApp, []);
+
+  const sdkThemeParams = useMemo<SdkThemeParams>(() => themeParams as unknown as SdkThemeParams, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    let isActive = true;
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    const captureWebApp = () => {
+      if (!isActive) {
+        return;
+      }
+
+      const currentWebApp = window.Telegram?.WebApp ?? null;
+      if (currentWebApp) {
+        setWebApp(currentWebApp);
+        return;
+      }
+
+      attempts += 1;
+      if (attempts < maxAttempts) {
+        window.setTimeout(captureWebApp, 150);
+      }
+    };
+
+    captureWebApp();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const isTelegram = Boolean(webApp);
 
@@ -102,57 +143,61 @@ export function useTelegramWebApp(): TelegramWebAppState {
 
     init();
 
+    sdkThemeParams.mount?.();
+    sdkMiniApp.mount?.();
+    sdkMiniApp.ready?.();
+
     if (typeof sdkInitData.restore === "function") {
       sdkInitData.restore();
     }
 
+    const resolveStartParam = async () => {
+      const nextStartParam = typeof sdkInitData.startParam === "function"
+        ? sdkInitData.startParam()
+        : sdkInitData.state?.()?.startParam;
+
+      setStartParam(nextStartParam);
+    };
+
+    void resolveStartParam();
+
     const mountViewport = async () => {
+      let isMounted = false;
+
       try {
         if (typeof sdkViewport.mount === "function") {
           await sdkViewport.mount();
+          isMounted = true;
         }
 
-        sdkViewport.expand?.();
+        try {
+          sdkViewport.expand?.();
 
-        if (typeof sdkViewport.requestFullscreen === "function") {
-          const canRequestFullscreen = sdkViewport.requestFullscreen.isAvailable?.() ?? true;
-          if (canRequestFullscreen) {
-            const requestFullscreenResult = sdkViewport.requestFullscreen();
-            if (requestFullscreenResult instanceof Promise) {
-              await requestFullscreenResult;
+          if (typeof sdkViewport.requestFullscreen === "function") {
+            const canRequestFullscreen = sdkViewport.requestFullscreen.isAvailable?.() ?? true;
+            if (canRequestFullscreen) {
+              const requestFullscreenResult = sdkViewport.requestFullscreen();
+              if (requestFullscreenResult instanceof Promise) {
+                await requestFullscreenResult;
+              }
             }
           }
+        } catch {
+          // Ignore fullscreen failures: expand() already attempted.
         }
       } catch {
-        // Ignore viewport/fullscreen failures: expand attempt already made.
+        if (!isMounted) {
+          // Fallback for clients where viewport.mount() is unstable.
+          sdkViewport.expand?.();
+        }
       }
     };
 
     void mountViewport();
-  }, [isTelegram, sdkInitData, sdkViewport]);
-
-  const startParam = useMemo(() => {
-    if (!isTelegram) {
-      return undefined;
-    }
-
-    if (typeof sdkInitData.startParam === "function") {
-      return sdkInitData.startParam();
-    }
-
-    if (typeof sdkInitData.state === "function") {
-      return sdkInitData.state()?.startParam;
-    }
-
-    return undefined;
-  }, [isTelegram, sdkInitData]);
+  }, [isTelegram, sdkInitData, sdkMiniApp, sdkThemeParams, sdkViewport]);
 
   useEffect(() => {
     if (!isTelegram) {
-      return;
-    }
-
-    if (typeof sdkBackButton.isSupported === "function" && !sdkBackButton.isSupported()) {
       return;
     }
 
@@ -165,10 +210,6 @@ export function useTelegramWebApp(): TelegramWebAppState {
 
   const backButtonController = useMemo<TelegramBackButtonController | null>(() => {
     if (!isTelegram) {
-      return null;
-    }
-
-    if (typeof sdkBackButton.isSupported === "function" && !sdkBackButton.isSupported()) {
       return null;
     }
 
