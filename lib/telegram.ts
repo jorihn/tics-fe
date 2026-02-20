@@ -1,69 +1,20 @@
 "use client";
 
-import { backButton, init, initData, miniApp, themeParams, viewport } from "@tma.js/sdk";
+import {
+  backButton,
+  init,
+  initData,
+  miniApp,
+  themeParams,
+  viewport,
+} from "@tma.js/sdk";
 import { useEffect, useMemo, useState } from "react";
-
-interface TelegramThemeParams {
-  bg_color?: string;
-  text_color?: string;
-  button_color?: string;
-  button_text_color?: string;
-  hint_color?: string;
-  secondary_bg_color?: string;
-}
-
-interface SdkMiniApp {
-  mount?: () => void;
-  ready?: () => void;
-}
-
-interface SdkThemeParams {
-  mount?: () => void;
-}
 
 interface TelegramBackButtonController {
   show: () => void;
   hide: () => void;
   onClick: (callback: () => void) => void;
   offClick: (callback: () => void) => void;
-}
-
-interface TelegramWebApp {
-  themeParams: TelegramThemeParams;
-}
-
-interface SdkBackButton {
-  hide?: () => void;
-  isSupported?: () => boolean;
-  mount?: () => void;
-  offClick?: (callback: () => void) => void;
-  onClick?: (callback: () => void) => void;
-  show?: () => void;
-  unmount?: () => void;
-}
-
-interface SdkInitData {
-  restore?: () => void;
-  startParam?: () => string | undefined;
-  state?: () => {
-    startParam?: string;
-  };
-}
-
-interface SdkViewport {
-  expand?: () => void;
-  mount?: () => Promise<void> | void;
-  requestFullscreen?: (() => Promise<void> | void) & {
-    isAvailable?: () => boolean;
-  };
-}
-
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: TelegramWebApp;
-    };
-  }
 }
 
 export interface TelegramWebAppState {
@@ -87,160 +38,145 @@ const FALLBACK_THEME = {
   softBg: "#fff4ee",
 };
 
+// Detect Telegram environment from URL hash (tgWebAppData / tgWebAppVersion)
+// which Telegram always injects, even without the legacy script tag.
+function detectTelegramEnv(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const hash = window.location.hash;
+  return hash.includes("tgWebAppData") || hash.includes("tgWebAppVersion");
+}
+
 export function useTelegramWebApp(): TelegramWebAppState {
-  const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
-  const [startParam, setStartParam] = useState<string | undefined>(undefined);
+  const [sdkState, setSdkState] = useState<{
+    ready: boolean;
+    startParam: string | undefined;
+  }>({ ready: false, startParam: undefined });
 
-  const sdkBackButton = useMemo<SdkBackButton>(() => backButton as unknown as SdkBackButton, []);
-
-  const sdkInitData = useMemo<SdkInitData>(() => initData as unknown as SdkInitData, []);
-
-  const sdkViewport = useMemo<SdkViewport>(() => viewport as unknown as SdkViewport, []);
-
-  const sdkMiniApp = useMemo<SdkMiniApp>(() => miniApp as unknown as SdkMiniApp, []);
-
-  const sdkThemeParams = useMemo<SdkThemeParams>(() => themeParams as unknown as SdkThemeParams, []);
-
+  // --- 1) Single async bootstrap: init → mount → expand → back button ---
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    let isActive = true;
-    let attempts = 0;
-    const maxAttempts = 20;
+    if (!detectTelegramEnv()) {
+      console.log("[TG] Not running inside Telegram, skipping SDK init.");
+      return;
+    }
 
-    const captureWebApp = () => {
-      if (!isActive) {
+    let cancelled = false;
+
+    const bootstrap = async () => {
+      // 1a) init SDK
+      try {
+        init();
+        console.log("[TG] SDK init() OK");
+      } catch (err) {
+        console.warn("[TG] SDK init() failed:", err);
         return;
       }
 
-      const currentWebApp = window.Telegram?.WebApp ?? null;
-      if (currentWebApp) {
-        setWebApp(currentWebApp);
-        return;
+      // 1b) Mount themeParams (must come before miniApp.mount per docs)
+      try { themeParams.mount(); } catch { /* ignore */ }
+      try { miniApp.mount(); } catch { /* ignore */ }
+      try { (miniApp as unknown as { ready: () => void }).ready(); } catch { /* ignore */ }
+      console.log("[TG] miniApp mounted + ready");
+
+      // 1c) Restore initData so startParam is accessible
+      try { initData.restore(); } catch { /* ignore */ }
+
+      let sp: string | undefined;
+      try {
+        sp = (initData as unknown as { startParam?: () => string | undefined }).startParam?.();
+        console.log("[TG] startParam from SDK:", sp);
+      } catch {
+        console.warn("[TG] Could not read startParam from SDK");
       }
 
-      attempts += 1;
-      if (attempts < maxAttempts) {
-        window.setTimeout(captureWebApp, 150);
+      // 1d) Mount viewport then expand (no fullscreen)
+      try {
+        await viewport.mount();
+        console.log("[TG] viewport.mount() OK");
+      } catch (err) {
+        console.warn("[TG] viewport.mount() failed:", err);
+      }
+
+      try {
+        viewport.expand();
+        console.log("[TG] viewport.expand() OK");
+      } catch (err) {
+        console.warn("[TG] viewport.expand() failed:", err);
+      }
+
+      // 1e) Mount back button
+      try {
+        backButton.mount();
+        console.log("[TG] backButton.mount() OK");
+      } catch (err) {
+        console.warn("[TG] backButton.mount() failed:", err);
+      }
+
+      // 1f) Commit state (after await → safe from set-state-in-effect lint)
+      if (!cancelled) {
+        setSdkState({ ready: true, startParam: sp });
       }
     };
 
-    captureWebApp();
+    void bootstrap();
 
     return () => {
-      isActive = false;
+      cancelled = true;
+      try { backButton.unmount(); } catch { /* ignore */ }
     };
   }, []);
 
-  const isTelegram = Boolean(webApp);
+  const { ready, startParam } = sdkState;
 
-  useEffect(() => {
-    if (!isTelegram) {
-      return;
-    }
-
-    init();
-
-    sdkThemeParams.mount?.();
-    sdkMiniApp.mount?.();
-    sdkMiniApp.ready?.();
-
-    if (typeof sdkInitData.restore === "function") {
-      sdkInitData.restore();
-    }
-
-    const resolveStartParam = async () => {
-      const nextStartParam = typeof sdkInitData.startParam === "function"
-        ? sdkInitData.startParam()
-        : sdkInitData.state?.()?.startParam;
-
-      setStartParam(nextStartParam);
-    };
-
-    void resolveStartParam();
-
-    const mountViewport = async () => {
-      let isMounted = false;
-
-      try {
-        if (typeof sdkViewport.mount === "function") {
-          await sdkViewport.mount();
-          isMounted = true;
-        }
-
-        try {
-          sdkViewport.expand?.();
-
-          if (typeof sdkViewport.requestFullscreen === "function") {
-            const canRequestFullscreen = sdkViewport.requestFullscreen.isAvailable?.() ?? true;
-            if (canRequestFullscreen) {
-              const requestFullscreenResult = sdkViewport.requestFullscreen();
-              if (requestFullscreenResult instanceof Promise) {
-                await requestFullscreenResult;
-              }
-            }
-          }
-        } catch {
-          // Ignore fullscreen failures: expand() already attempted.
-        }
-      } catch {
-        if (!isMounted) {
-          // Fallback for clients where viewport.mount() is unstable.
-          sdkViewport.expand?.();
-        }
-      }
-    };
-
-    void mountViewport();
-  }, [isTelegram, sdkInitData, sdkMiniApp, sdkThemeParams, sdkViewport]);
-
-  useEffect(() => {
-    if (!isTelegram) {
-      return;
-    }
-
-    sdkBackButton.mount?.();
-
-    return () => {
-      sdkBackButton.unmount?.();
-    };
-  }, [isTelegram, sdkBackButton]);
-
+  // --- 2) Back button controller ---
   const backButtonController = useMemo<TelegramBackButtonController | null>(() => {
-    if (!isTelegram) {
+    if (!ready) {
       return null;
     }
 
     return {
-      show: () => sdkBackButton.show?.(),
-      hide: () => sdkBackButton.hide?.(),
-      onClick: (callback: () => void) => {
-        sdkBackButton.onClick?.(callback);
-      },
-      offClick: (callback: () => void) => {
-        sdkBackButton.offClick?.(callback);
-      },
+      show: () => { try { backButton.show(); } catch { /* ignore */ } },
+      hide: () => { try { backButton.hide(); } catch { /* ignore */ } },
+      onClick: (cb: () => void) => { try { backButton.onClick(cb); } catch { /* ignore */ } },
+      offClick: (cb: () => void) => { try { backButton.offClick(cb); } catch { /* ignore */ } },
     };
-  }, [isTelegram, sdkBackButton]);
+  }, [ready]);
 
+  // --- 3) Theme (from SDK themeParams after mount) ---
   const theme = useMemo(() => {
-    if (!webApp) {
+    if (!ready) {
       return FALLBACK_THEME;
     }
 
-    return {
-      canvas: webApp.themeParams.bg_color ?? FALLBACK_THEME.canvas,
-      ink: webApp.themeParams.text_color ?? FALLBACK_THEME.ink,
-      accent: webApp.themeParams.button_color ?? FALLBACK_THEME.accent,
-      accentText: webApp.themeParams.button_text_color ?? FALLBACK_THEME.accentText,
-      softBg: webApp.themeParams.secondary_bg_color ?? FALLBACK_THEME.softBg,
-    };
-  }, [webApp]);
+    try {
+      const tp = themeParams as unknown as {
+        bgColor?: () => string | undefined;
+        textColor?: () => string | undefined;
+        buttonColor?: () => string | undefined;
+        buttonTextColor?: () => string | undefined;
+        secondaryBgColor?: () => string | undefined;
+      };
+
+      return {
+        canvas: tp.bgColor?.() ?? FALLBACK_THEME.canvas,
+        ink: tp.textColor?.() ?? FALLBACK_THEME.ink,
+        accent: tp.buttonColor?.() ?? FALLBACK_THEME.accent,
+        accentText: tp.buttonTextColor?.() ?? FALLBACK_THEME.accentText,
+        softBg: tp.secondaryBgColor?.() ?? FALLBACK_THEME.softBg,
+      };
+    } catch {
+      return FALLBACK_THEME;
+    }
+  }, [ready]);
 
   return {
-    isTelegram,
+    isTelegram: ready,
     backButton: backButtonController,
     startParam,
     theme,
