@@ -1,5 +1,6 @@
 "use client";
 
+import { backButton, init, initData, viewport } from "@tma.js/sdk";
 import { useEffect, useMemo } from "react";
 
 interface TelegramThemeParams {
@@ -11,7 +12,7 @@ interface TelegramThemeParams {
   secondary_bg_color?: string;
 }
 
-interface TelegramBackButton {
+interface TelegramBackButtonController {
   show: () => void;
   hide: () => void;
   onClick: (callback: () => void) => void;
@@ -19,18 +20,33 @@ interface TelegramBackButton {
 }
 
 interface TelegramWebApp {
-  initDataUnsafe?: {
-    user?: {
-      id?: number;
-      first_name?: string;
-    };
-    start_param?: string;
-  };
   themeParams: TelegramThemeParams;
-  ready: () => void;
-  expand: () => void;
-  requestFullscreen?: () => void | Promise<void>;
-  BackButton?: TelegramBackButton;
+}
+
+interface SdkBackButton {
+  hide?: () => void;
+  isSupported?: () => boolean;
+  mount?: () => void;
+  offClick?: (callback: () => void) => void;
+  onClick?: (callback: () => void) => void;
+  show?: () => void;
+  unmount?: () => void;
+}
+
+interface SdkInitData {
+  restore?: () => void;
+  startParam?: () => string | undefined;
+  state?: () => {
+    startParam?: string;
+  };
+}
+
+interface SdkViewport {
+  expand?: () => void;
+  mount?: () => Promise<void> | void;
+  requestFullscreen?: (() => Promise<void> | void) & {
+    isAvailable?: () => boolean;
+  };
 }
 
 declare global {
@@ -43,7 +59,8 @@ declare global {
 
 export interface TelegramWebAppState {
   isTelegram: boolean;
-  webApp: TelegramWebApp | null;
+  backButton: TelegramBackButtonController | null;
+  startParam: string | undefined;
   theme: {
     canvas: string;
     ink: string;
@@ -70,25 +87,102 @@ export function useTelegramWebApp(): TelegramWebAppState {
     return window.Telegram?.WebApp ?? null;
   }, []);
 
+  const sdkBackButton = useMemo<SdkBackButton>(() => backButton as unknown as SdkBackButton, []);
+
+  const sdkInitData = useMemo<SdkInitData>(() => initData as unknown as SdkInitData, []);
+
+  const sdkViewport = useMemo<SdkViewport>(() => viewport as unknown as SdkViewport, []);
+
+  const isTelegram = Boolean(webApp);
+
   useEffect(() => {
-    if (!webApp) {
+    if (!isTelegram) {
       return;
     }
 
-    webApp.ready();
+    init();
 
-    // Expand viewport first to match Telegram Mini Apps viewport guidance.
-    webApp.expand();
-
-    if (typeof webApp.requestFullscreen === "function") {
-      const requestFullscreenResult = webApp.requestFullscreen();
-      if (requestFullscreenResult instanceof Promise) {
-        requestFullscreenResult.catch(() => {
-          // Ignore fullscreen failures: expand() already applied.
-        });
-      }
+    if (typeof sdkInitData.restore === "function") {
+      sdkInitData.restore();
     }
-  }, [webApp]);
+
+    const mountViewport = async () => {
+      try {
+        if (typeof sdkViewport.mount === "function") {
+          await sdkViewport.mount();
+        }
+
+        sdkViewport.expand?.();
+
+        if (typeof sdkViewport.requestFullscreen === "function") {
+          const canRequestFullscreen = sdkViewport.requestFullscreen.isAvailable?.() ?? true;
+          if (canRequestFullscreen) {
+            const requestFullscreenResult = sdkViewport.requestFullscreen();
+            if (requestFullscreenResult instanceof Promise) {
+              await requestFullscreenResult;
+            }
+          }
+        }
+      } catch {
+        // Ignore viewport/fullscreen failures: expand attempt already made.
+      }
+    };
+
+    void mountViewport();
+  }, [isTelegram, sdkInitData, sdkViewport]);
+
+  const startParam = useMemo(() => {
+    if (!isTelegram) {
+      return undefined;
+    }
+
+    if (typeof sdkInitData.startParam === "function") {
+      return sdkInitData.startParam();
+    }
+
+    if (typeof sdkInitData.state === "function") {
+      return sdkInitData.state()?.startParam;
+    }
+
+    return undefined;
+  }, [isTelegram, sdkInitData]);
+
+  useEffect(() => {
+    if (!isTelegram) {
+      return;
+    }
+
+    if (typeof sdkBackButton.isSupported === "function" && !sdkBackButton.isSupported()) {
+      return;
+    }
+
+    sdkBackButton.mount?.();
+
+    return () => {
+      sdkBackButton.unmount?.();
+    };
+  }, [isTelegram, sdkBackButton]);
+
+  const backButtonController = useMemo<TelegramBackButtonController | null>(() => {
+    if (!isTelegram) {
+      return null;
+    }
+
+    if (typeof sdkBackButton.isSupported === "function" && !sdkBackButton.isSupported()) {
+      return null;
+    }
+
+    return {
+      show: () => sdkBackButton.show?.(),
+      hide: () => sdkBackButton.hide?.(),
+      onClick: (callback: () => void) => {
+        sdkBackButton.onClick?.(callback);
+      },
+      offClick: (callback: () => void) => {
+        sdkBackButton.offClick?.(callback);
+      },
+    };
+  }, [isTelegram, sdkBackButton]);
 
   const theme = useMemo(() => {
     if (!webApp) {
@@ -105,8 +199,9 @@ export function useTelegramWebApp(): TelegramWebAppState {
   }, [webApp]);
 
   return {
-    isTelegram: Boolean(webApp),
-    webApp,
+    isTelegram,
+    backButton: backButtonController,
+    startParam,
     theme,
   };
 }

@@ -10,17 +10,17 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
-  const { isTelegram, theme, webApp } = useTelegramWebApp();
+  const { isTelegram, theme, backButton, startParam } = useTelegramWebApp();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     trackEvent("open_miniapp", { telegram: isTelegram });
 
-    if (webApp?.initDataUnsafe?.start_param) {
-      trackEvent("entered_start", { start_param: webApp.initDataUnsafe.start_param });
+    if (startParam) {
+      trackEvent("entered_start", { start_param: startParam });
     }
-  }, [isTelegram, webApp]);
+  }, [isTelegram, startParam]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -32,7 +32,6 @@ export function AppShell({ children }: AppShellProps) {
   }, [theme]);
 
   useEffect(() => {
-    const backButton = webApp?.BackButton;
     if (!backButton) {
       return;
     }
@@ -56,7 +55,7 @@ export function AppShell({ children }: AppShellProps) {
     backButton.hide();
 
     return;
-  }, [pathname, router, webApp]);
+  }, [backButton, pathname, router]);
 
   return <div className="mx-auto min-h-screen w-full max-w-[680px] px-4 pb-28 pt-6 sm:px-7">{children}</div>;
 }
