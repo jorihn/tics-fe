@@ -29,7 +29,7 @@ interface TelegramWebApp {
   themeParams: TelegramThemeParams;
   ready: () => void;
   expand: () => void;
-  requestFullscreen?: () => void;
+  requestFullscreen?: () => void | Promise<void>;
   BackButton?: TelegramBackButton;
 }
 
@@ -77,12 +77,17 @@ export function useTelegramWebApp(): TelegramWebAppState {
 
     webApp.ready();
 
-    if (typeof webApp.requestFullscreen === "function") {
-      webApp.requestFullscreen();
-      return;
-    }
-
+    // Expand viewport first to match Telegram Mini Apps viewport guidance.
     webApp.expand();
+
+    if (typeof webApp.requestFullscreen === "function") {
+      const requestFullscreenResult = webApp.requestFullscreen();
+      if (requestFullscreenResult instanceof Promise) {
+        requestFullscreenResult.catch(() => {
+          // Ignore fullscreen failures: expand() already applied.
+        });
+      }
+    }
   }, [webApp]);
 
   const theme = useMemo(() => {
